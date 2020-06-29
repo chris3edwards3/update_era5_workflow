@@ -30,28 +30,21 @@ def append_era5_to_record(record_file_path, addition_file_path):
     # Check for duplicate time-steps
     print('Checking for duplicate time-steps in record and new simulation...')
     time_duplicates_count = len(set(time_record_list) & set(time_addition_list))
-    print('Time duplicates count: ' + str(time_duplicates_count))
+    print('Duplicate time-step count: ' + str(time_duplicates_count))
 
-    if time_duplicates_count == 0:
-        print('No duplicate time-steps. Continuing workflow...')
-    elif time_duplicates_count == 1 and time_record_list[-1] == time_addition_list[0]:
-        print('Last time-step of previous simulation same as first time-step of new simulation.')
-        print('Removing first time-step of new simulation. Continuing workflow...')
-        time_addition_array = np.delete(time_addition_array, 0, 0)
-        flow_addition_array = np.delete(flow_addition_array, 0, 0)
-    else:
-        print('ERROR: Multiple duplicate time-steps in record and new time-series. Aborting...')
-        raise Exception('Multiple duplicate time-steps in record and new time-series. Aborting...')
+    print('Deleting {} overlapping time-steps from the addition...'.format(time_duplicates_count))
+    time_addition_array_keep = time_addition_array[time_duplicates_count:]
+    flow_addition_array_keep = flow_addition_array[time_duplicates_count:]
 
     # Appending new time-steps to new array
-    print('Appending additional time-steps to record netcdf...')
-    time_new_total_array = np.append(time_record_array, time_addition_array, axis=0)
-    flow_new_total_array = np.append(flow_record_array, flow_addition_array, axis=0)
+    print('Appending additional time-steps to record netCDF...')
+    time_new_total_array = np.append(time_record_array, time_addition_array_keep, axis=0)
+    flow_new_total_array = np.append(flow_record_array, flow_addition_array_keep, axis=0)
 
-    # Saving new arrays to record netcdf file
+    # Saving new arrays to record netCDF file
     record_netcdf.variables['Qout'][:] = flow_new_total_array
     record_netcdf.variables['time'][:] = time_new_total_array
-    print('New time-steps saved to netcdf')
+    print('New time-steps saved to netCDF')
 
 
 def run_era5_rapid_simulation(region, rapid_executable_location, lsm_data_location, master_rapid_io_location,

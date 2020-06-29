@@ -9,9 +9,10 @@ Updated: June 2020
 Workflow to update the ERA-5 historical simulation. This script:
 1. Identifies the dates for the simulation
 2. Starts the RAPID process for each region
-3. Appends the resulting simulation onto an annual record netcdf file for each region
+3. Appends the resulting simulation onto an annual record netCDF file for each region
 4. Creates a text file the records the last date of the simulation.
 """
+# TODO: give a 2-week buffer for the initialization to catch up.
 import os
 import shutil
 import sys
@@ -92,7 +93,7 @@ if __name__ == '__main__':
         print('ERROR: Output file not found for ' + input_regions[0])
         raise Exception('Output file not found for ' + input_regions[0])
 
-    # Append simulation onto record netcdf for each region
+    # Append simulation onto record netCDF for each region
     for region in input_regions:
         print('\nAppending ERA-5 to record file for ' + region + '...')
 
@@ -137,4 +138,3 @@ if __name__ == '__main__':
     # Finish ERA-5 workflow,
     script_end_time = datetime.now()
     print('\nWorkflow Finished! Total Runtime: ' + str(script_end_time - script_start_time))
-
