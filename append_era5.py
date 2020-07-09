@@ -9,8 +9,11 @@ Updated: June 2020
 Script to append ERA-5 RAPID simulation onto a master netCDF, eg. add 2019 to the 1979-2018 file.
 To run the script, give 3 additional arguments:
     1. Path to output directory containing new Qout netCDFs (this path should have sub-folders for each region)
-    2. Path to directory with master netCDFs (this path should have sub-folders for each region)
+    2. Path to directory with complete historical netCDFs (this path should have sub-folders for each region)
+        This path may be the same as argument 1
     3. Year that is being added (eg: 2019)
+
+Note: the complete historical netCDF's should have a time dimension with UNLIMITED length, or this won't work.
 """
 import netCDF4 as nc
 import numpy as np
@@ -98,7 +101,7 @@ if __name__ == '__main__':
     logs_dir = sys.argv[3]
     year_to_add = sys.argv[4]
 
-    # Start logging & capture stdout to log file (instead of printing to console or command line)
+    # Start logging & capture scdtdout to log file (instead of printing to console or command line)
     script_start_time = datetime.now()
     log_path = os.path.join(logs_dir, 'append_era5_' + script_start_time.strftime('%Y%m%d%H%M') + '.log')
     log = open(log_path, 'a')
@@ -144,7 +147,16 @@ if __name__ == '__main__':
         # Rename record netCDF to include new ending date
         print('Renaming record netCDF to include updated ending year... ')
         os.rename(record_file_path, record_file_path.replace(record_end_date + '.nc', addition_end_date + '.nc'))
+
+        # Remove addition netCDF since it has already been appended, and remove any temporary m3*.nc files
+        print('Deleting ' + addition_file_path + '...')
+        os.remove(addition_file_path)
+        for file in os.listdir(os.path.join(output_dir, region)):
+            if file.startswith('m3'):
+                print('Deleting ' + file + '...')
+                os.remove(os.path.join(output_dir, region, file))
         print('Successfully appended new ERA-5 to record netCDF for ' + region + '\n')
+
 
     # Finish script
     script_end_time = datetime.now()

@@ -10,9 +10,8 @@ Script to run ERA-5 RAPID simulation for one whole year of ERA-5 Runoff data.
 To run the script, give 6 additional arguments:
     1. path to rapid executable
     2. path to directory with LSM Grid (ERA-5 Runoff)
-    3. path to master rapid-io directory that contains the input and output folders
-        (the input folder should have sub-folders for each region)
-    4. path to master directory of record files for each region (this path should have sub-folders for each region)
+    3. path to master rapid input directory that contains the input folders, with sub-folders for each region
+    4. path to master era-5 output directory (should be different than the forecast output)
     5. path to directory of log files
     6. year to run (eg: 2020)
 """
@@ -22,14 +21,15 @@ from datetime import datetime, timedelta
 from RAPIDpy.inflow import run_lsm_rapid_process
 
 
-def run_era5_rapid_simulation(region, rapid_executable_location, lsm_data_location, master_rapid_io_location,
-                              prev_sim_end_date_str, simulation_start_datetime, simulation_end_datetime):
+def run_era5_rapid_simulation(region, rapid_executable_location, lsm_data_location, master_input_location,
+                              master_output_location, prev_sim_end_date_str, simulation_start_datetime,
+                              simulation_end_datetime):
     print('Region: ' + region)
 
     # Define rapid input and output folder for specific region
-    rapid_input_location = os.path.join(master_rapid_io_location, 'input', region)
+    rapid_input_location = os.path.join(master_input_location, region)
     print('Rapid Input Folder: ' + rapid_input_location)
-    rapid_output_location = os.path.join(master_rapid_io_location, 'output', region)
+    rapid_output_location = os.path.join(master_output_location, region)
     if not os.path.exists(rapid_output_location):
         print('Creating Output Folder...')
         os.makedirs(rapid_output_location)
@@ -46,7 +46,7 @@ def run_era5_rapid_simulation(region, rapid_executable_location, lsm_data_locati
         raise Exception('Initial Flows File not found for the region ' + region)
 
     # Run RAPID
-    print('Starting RAPID process for ' + region + '...\n')
+    print('Starting RAPID process for ' + region + '...')
     run_lsm_rapid_process(
         rapid_executable_location=rapid_executable_location,
         lsm_data_location=lsm_data_location,  # folder containing ERA-5 runoff data
@@ -58,8 +58,8 @@ def run_era5_rapid_simulation(region, rapid_executable_location, lsm_data_locati
         run_rapid_simulation=True,  # if you want to run RAPID after generating inflow file
         generate_rapid_namelist_file=False,  # if you want to run RAPID manually later
         generate_initialization_file=True,  # if you want to generate qinit file from end of RAPID simulation
-        use_all_processors=False,  # defaults to use all processors available
-        num_processors=1  # you can change this number if use_all_processors=False
+        use_all_processors=True,  # defaults to use all processors available
+        # num_processors=1  # you can change this number if use_all_processors=False
     )
     print('------------------------------\n')
 
@@ -72,8 +72,8 @@ if __name__ == '__main__':
     """
     arg1 = path to rapid executable
     arg2 = path to directory with LSM Grid (ERA-5 Runoff)
-    arg3 = path to master rapid-io directory that contains the input and output folders
-    arg4 = path to master directory of record files for each region 
+    arg3 = path to master rapid input directory (contains folders for each region with needed input files)
+    arg4 = path to master output directory (contains folders for each region) 
     arg5 = path to directory of log files
     arg6 = year to run (eg: 2020)
     """
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     # accept the arguments
     rapid_executable_location = sys.argv[1]
     lsm_data_location = sys.argv[2]
-    master_rapid_io_location = sys.argv[3]
-    records_dir = sys.argv[4]
+    master_input_location = sys.argv[3]
+    master_output_location = sys.argv[4]
     logs_dir = sys.argv[5]
     simulation_year_str = sys.argv[6]
 
@@ -111,13 +111,14 @@ if __name__ == '__main__':
 
     # Loop through and run RAPID on each region
     print('\nLooping through and running RAPID on each region...\n')
-    input_regions = os.listdir(os.path.join(master_rapid_io_location, 'input'))
+    input_regions = os.listdir(master_input_location)
     for region in input_regions:
         run_era5_rapid_simulation(
             region,
             rapid_executable_location,
             lsm_data_location,
-            master_rapid_io_location,
+            master_input_location,
+            master_output_location,
             prev_sim_end_date_str,
             simulation_start_datetime,
             simulation_end_datetime
