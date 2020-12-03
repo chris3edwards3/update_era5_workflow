@@ -1,3 +1,5 @@
+### OLD VERSION, Updated version is on BYU-Hydroinformatics
+
 # Update ERA-5 Workflow
 
 The purpose of this workflow is to continuously update the ERA-5 RAPID simulation as new ERA-5 Runoff data becomes available. The ERA-5 Historical Simulation is part of the GEOGloWS Streamflow Services.
