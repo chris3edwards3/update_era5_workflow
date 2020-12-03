@@ -1,4 +1,4 @@
-### OLD VERSION, Updated version is on BYU-Hydroinformatics
+# OLD VERSION, Updated version is on BYU-Hydroinformatics
 
 # Update ERA-5 Workflow
 
